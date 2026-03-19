@@ -13,8 +13,9 @@ use crate::payments::{LabeledPrice, ShippingOption};
 use crate::stickers::{InputSticker, MaskPosition, StickerFormat, StickerType};
 use crate::types::{
     AllowedUpdate, BotCommand, BotCommandScope, ChatAction, ChatAdministratorRights, ChatId,
-    ChatPermissions, InlineKeyboardMarkup, InputPollOption, LinkPreviewOptions, MenuButton,
-    MessageEntity, PollType, ReactionType, ReplyMarkup, ReplyParameters, StoryArea,
+    ChatPermissions, InlineKeyboardMarkup, InputChecklist, InputPollOption, LinkPreviewOptions,
+    MenuButton, MessageEntity, PollType, ReactionType, ReplyMarkup, ReplyParameters, StoryArea,
+    SuggestedPostParameters,
 };
 
 #[apply(apistruct!)]
@@ -50,6 +51,7 @@ pub struct SendMessageParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub text: String,
     pub parse_mode: Option<ParseMode>,
     pub entities: Option<Vec<MessageEntity>>,
@@ -58,6 +60,7 @@ pub struct SendMessageParams {
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -67,10 +70,13 @@ pub struct SendMessageParams {
 pub struct ForwardMessageParams {
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub from_chat_id: ChatId,
     pub video_start_timestamp: Option<u64>,
     pub disable_notification: Option<bool>,
     pub protect_content: Option<bool>,
+    pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub message_id: i32,
 }
 
@@ -79,6 +85,7 @@ pub struct ForwardMessageParams {
 pub struct ForwardMessagesParams {
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub from_chat_id: ChatId,
     pub message_ids: Vec<i32>,
     pub disable_notification: Option<bool>,
@@ -90,6 +97,7 @@ pub struct ForwardMessagesParams {
 pub struct CopyMessageParams {
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub from_chat_id: ChatId,
     pub message_id: i32,
     pub video_start_timestamp: Option<u64>,
@@ -100,6 +108,8 @@ pub struct CopyMessageParams {
     pub disable_notification: Option<bool>,
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
+    pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -109,6 +119,7 @@ pub struct CopyMessageParams {
 pub struct CopyMessagesParams {
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub from_chat_id: ChatId,
     pub message_ids: Vec<i32>,
     pub disable_notification: Option<bool>,
@@ -122,6 +133,7 @@ pub struct SendPhotoParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub photo: FileUpload,
     pub caption: Option<String>,
     pub parse_mode: Option<ParseMode>,
@@ -132,6 +144,7 @@ pub struct SendPhotoParams {
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -142,6 +155,7 @@ pub struct SendAudioParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub audio: FileUpload,
     pub caption: Option<String>,
     pub parse_mode: Option<ParseMode>,
@@ -154,6 +168,7 @@ pub struct SendAudioParams {
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -164,6 +179,7 @@ pub struct SendDocumentParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub document: FileUpload,
     pub thumbnail: Option<FileUpload>,
     pub caption: Option<String>,
@@ -174,6 +190,7 @@ pub struct SendDocumentParams {
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -184,6 +201,7 @@ pub struct SendVideoParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub video: FileUpload,
     pub duration: Option<u32>,
     pub width: Option<u32>,
@@ -201,6 +219,7 @@ pub struct SendVideoParams {
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -211,6 +230,7 @@ pub struct SendAnimationParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub animation: FileUpload,
     pub duration: Option<u32>,
     pub width: Option<u32>,
@@ -225,6 +245,7 @@ pub struct SendAnimationParams {
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -235,6 +256,7 @@ pub struct SendVoiceParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub voice: FileUpload,
     pub caption: Option<String>,
     pub parse_mode: Option<ParseMode>,
@@ -244,6 +266,7 @@ pub struct SendVoiceParams {
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -254,6 +277,7 @@ pub struct SendVideoNoteParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub video_note: FileUpload,
     pub duration: Option<u32>,
     pub length: Option<u32>,
@@ -262,6 +286,7 @@ pub struct SendVideoNoteParams {
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -271,6 +296,8 @@ pub struct SendVideoNoteParams {
 pub struct SendPaidMediaParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
+    pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub star_count: u32,
     pub media: Vec<InputPaidMedia>,
     pub payload: Option<String>,
@@ -281,6 +308,7 @@ pub struct SendPaidMediaParams {
     pub disable_notification: Option<bool>,
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -291,6 +319,7 @@ pub struct SendMediaGroupParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub media: Vec<MediaGroupInputMedia>,
     pub disable_notification: Option<bool>,
     pub protect_content: Option<bool>,
@@ -304,6 +333,7 @@ pub struct SendLocationParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub latitude: f64,
     pub longitude: f64,
     pub horizontal_accuracy: Option<f64>,
@@ -314,6 +344,7 @@ pub struct SendLocationParams {
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -344,10 +375,21 @@ pub struct StopMessageLiveLocationParams {
 }
 
 #[apply(apistruct!)]
+#[derive(Eq)]
+pub struct EditMessageChecklistParams {
+    pub business_connection_id: String,
+    pub chat_id: ChatId,
+    pub message_id: i32,
+    pub checklist: InputChecklist,
+    pub reply_markup: Option<InlineKeyboardMarkup>,
+}
+
+#[apply(apistruct!)]
 pub struct SendVenueParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub latitude: f64,
     pub longitude: f64,
     pub title: String,
@@ -360,6 +402,7 @@ pub struct SendVenueParams {
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -370,6 +413,7 @@ pub struct SendContactParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub phone_number: String,
     pub first_name: String,
     pub last_name: Option<String>,
@@ -378,6 +422,7 @@ pub struct SendContactParams {
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -417,13 +462,39 @@ pub struct SendDiceParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub emoji: Option<String>,
     pub disable_notification: Option<bool>,
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct SendMessageDraftParams {
+    pub chat_id: ChatId,
+    pub message_thread_id: Option<i32>,
+    pub draft_id: Option<i32>,
+    pub text: String,
+    pub parse_mode: Option<ParseMode>,
+    pub entities: Option<Vec<MessageEntity>>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct SendChecklistParams {
+    pub business_connection_id: String,
+    pub chat_id: ChatId,
+    pub checklist: InputChecklist,
+    pub disable_notification: Option<bool>,
+    pub protect_content: Option<bool>,
+    pub message_effect_id: Option<String>,
+    pub reply_parameters: Option<ReplyParameters>,
+    pub reply_markup: Option<InlineKeyboardMarkup>,
 }
 
 #[apply(apistruct!)]
@@ -447,6 +518,14 @@ pub struct SetMessageReactionParams {
 #[apply(apistruct!)]
 #[derive(Copy, Eq)]
 pub struct GetUserProfilePhotosParams {
+    pub user_id: u64,
+    pub offset: Option<u32>,
+    pub limit: Option<u32>,
+}
+
+#[apply(apistruct!)]
+#[derive(Copy, Eq)]
+pub struct GetUserProfileAudiosParams {
     pub user_id: u64,
     pub offset: Option<u32>,
     pub limit: Option<u32>,
@@ -513,6 +592,8 @@ pub struct PromoteChatMemberParams {
     pub can_invite_users: Option<bool>,
     pub can_pin_messages: Option<bool>,
     pub can_manage_topics: Option<bool>,
+    pub can_manage_direct_messages: Option<bool>,
+    pub can_manage_tags: Option<bool>,
 }
 
 #[apply(apistruct!)]
@@ -521,6 +602,14 @@ pub struct SetChatAdministratorCustomTitleParams {
     pub chat_id: ChatId,
     pub user_id: u64,
     pub custom_title: String,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct SetChatMemberTagParams {
+    pub chat_id: ChatId,
+    pub user_id: u64,
+    pub tag: Option<String>,
 }
 
 #[apply(apistruct!)]
@@ -852,6 +941,11 @@ pub struct GetMyShortDescriptionParams {
 }
 
 #[apply(apistruct!)]
+pub struct SetMyProfilePhotoParams {
+    pub photo: InputProfilePhoto,
+}
+
+#[apply(apistruct!)]
 #[derive(Eq)]
 pub struct GetMyCommandsParams {
     pub scope: Option<BotCommandScope>,
@@ -925,6 +1019,22 @@ pub struct StopPollParams {
 
 #[apply(apistruct!)]
 #[derive(Eq)]
+pub struct ApproveSuggestedPostParams {
+    pub chat_id: i64,
+    pub message_id: i32,
+    pub send_date: Option<u64>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct DeclineSuggestedPostParams {
+    pub chat_id: i64,
+    pub message_id: i32,
+    pub send_date: Option<u64>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
 pub struct DeleteMessageParams {
     pub chat_id: ChatId,
     pub message_id: i32,
@@ -943,12 +1053,14 @@ pub struct SendStickerParams {
     pub business_connection_id: Option<String>,
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub sticker: FileUpload,
     pub emoji: Option<String>,
     pub disable_notification: Option<bool>,
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -1188,7 +1300,39 @@ pub struct GetBusinessAccountGiftsParams {
     pub exclude_unsaved: Option<bool>,
     pub exclude_saved: Option<bool>,
     pub exclude_unlimited: Option<bool>,
-    pub exclude_limited: Option<bool>,
+    pub exclude_limited_upgradable: Option<bool>,
+    pub exclude_limited_non_upgradable: Option<bool>,
+    pub exclude_unique: Option<bool>,
+    pub exclude_from_blockchain: Option<bool>,
+    pub sort_by_price: Option<bool>,
+    pub offset: Option<String>,
+    pub limit: Option<u32>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct GetUserGiftsParams {
+    pub user_id: u64,
+    pub exclude_unlimited: Option<bool>,
+    pub exclude_limited_upgradable: Option<bool>,
+    pub exclude_limited_non_upgradable: Option<bool>,
+    pub exclude_from_blockchain: Option<bool>,
+    pub exclude_unique: Option<bool>,
+    pub sort_by_price: Option<bool>,
+    pub offset: Option<String>,
+    pub limit: Option<u32>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct GetChatGiftsParams {
+    pub chat_id: ChatId,
+    pub exclude_unsaved: Option<bool>,
+    pub exclude_saved: Option<bool>,
+    pub exclude_unlimited: Option<bool>,
+    pub exclude_limited_upgradable: Option<bool>,
+    pub exclude_limited_non_upgradable: Option<bool>,
+    pub exclude_from_blockchain: Option<bool>,
     pub exclude_unique: Option<bool>,
     pub sort_by_price: Option<bool>,
     pub offset: Option<String>,
@@ -1234,6 +1378,17 @@ pub struct PostStoryParams {
 }
 
 #[apply(apistruct!)]
+#[derive(Eq)]
+pub struct RepostStoryParams {
+    pub business_connection_id: String,
+    pub from_chat_id: ChatId,
+    pub from_story_id: i64,
+    pub active_period: u32,
+    pub post_to_chat_page: Option<bool>,
+    pub protect_content: Option<bool>,
+}
+
+#[apply(apistruct!)]
 pub struct EditStoryParams {
     pub business_connection_id: String,
     pub story_id: i64,
@@ -1266,6 +1421,7 @@ pub struct AnswerInlineQueryParams {
 pub struct SendInvoiceParams {
     pub chat_id: ChatId,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic_id: Option<i64>,
     pub title: String,
     pub description: String,
     pub payload: String,
@@ -1291,6 +1447,7 @@ pub struct SendInvoiceParams {
     pub protect_content: Option<bool>,
     pub allow_paid_broadcast: Option<bool>,
     pub message_effect_id: Option<String>,
+    pub suggested_post_parameters: Option<SuggestedPostParameters>,
     pub reply_parameters: Option<ReplyParameters>,
     pub reply_markup: Option<InlineKeyboardMarkup>,
 }

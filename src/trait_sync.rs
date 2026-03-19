@@ -4,14 +4,15 @@ use crate::games::GameHighScore;
 use crate::gifts::{Gifts, OwnedGifts};
 use crate::inline_mode::{PreparedInlineMessage, SentWebAppMessage};
 use crate::input_file::HasInputFile;
-use crate::input_media::{InputMedia, MediaGroupInputMedia};
+use crate::input_media::{InputMedia, InputProfilePhoto, InputStoryContent, MediaGroupInputMedia};
 use crate::payments::{StarAmount, StarTransactions};
 use crate::response::{MessageOrBool, MethodResponse};
 use crate::stickers::{Sticker, StickerSet};
 use crate::types::{
     BotCommand, BotDescription, BotName, BotShortDescription, BusinessConnection,
     ChatAdministratorRights, ChatFullInfo, ChatInviteLink, ChatMember, File, ForumTopic,
-    MenuButton, Message, MessageId, Poll, Story, User, UserChatBoosts, UserProfilePhotos,
+    MenuButton, Message, MessageId, Poll, Story, User, UserChatBoosts, UserProfileAudios,
+    UserProfilePhotos,
 };
 use crate::updates::{Update, WebhookInfo};
 
@@ -137,13 +138,17 @@ pub trait TelegramApi {
     request!(sendLocation, Message);
     request!(editMessageLiveLocation, MessageOrBool);
     request!(stopMessageLiveLocation, MessageOrBool);
+    request!(sendChecklist, MessageOrBool);
+    request!(editMessageChecklist, MessageOrBool);
     request!(sendVenue, Message);
     request!(sendContact, Message);
     request!(sendPoll, Message);
     request!(sendDice, Message);
+    request!(sendMessageDraft, bool);
     request!(sendChatAction, bool);
     request!(setMessageReaction, bool);
     request!(getUserProfilePhotos, UserProfilePhotos);
+    request!(getUserProfileAudios, UserProfileAudios);
     request!(setUserEmojiStatus, bool);
     request!(getFile, File);
     request!(banChatMember, bool);
@@ -151,6 +156,7 @@ pub trait TelegramApi {
     request!(restrictChatMember, bool);
     request!(promoteChatMember, bool);
     request!(setChatAdministratorCustomTitle, bool);
+    request!(setChatMemberTag, bool);
     request!(banChatSenderChat, bool);
     request!(unbanChatSenderChat, bool);
     request!(setChatPermissions, bool);
@@ -208,6 +214,32 @@ pub trait TelegramApi {
     request!(getMyDescription, BotDescription);
     request!(setMyShortDescription, bool);
     request!(getMyShortDescription, BotShortDescription);
+
+    fn set_my_profile_photo(
+        &self,
+        params: &crate::methods::SetMyProfilePhotoParams,
+    ) -> Result<MethodResponse<bool>, Self::Error> {
+        let mut files = Vec::new();
+
+        let mut params = params.clone();
+        match &mut params.photo {
+            InputProfilePhoto::Static(photo_static) => {
+                if let Some(file) = photo_static.photo.replace_attach("photo_static") {
+                    files.push(("photo_static", file));
+                }
+            }
+            InputProfilePhoto::Animated(photo_animated) => {
+                if let Some(file) = photo_animated.animation.replace_attach("photo_animated") {
+                    files.push(("photo_animated", file));
+                }
+            }
+        }
+
+        self.request_with_possible_form_data("setMyProfilePhoto", params, files)
+    }
+
+    request_nb!(removeMyProfilePhoto, bool);
+
     request!(answerInlineQuery, bool);
     request!(editMessageText, MessageOrBool);
     request!(editMessageCaption, MessageOrBool);
@@ -256,6 +288,8 @@ pub trait TelegramApi {
 
     request!(editMessageReplyMarkup, MessageOrBool);
     request!(stopPoll, Poll);
+    request!(approveSuggestedPost, bool);
+    request!(declineSuggestedPost, bool);
     request!(deleteMessage, bool);
     request!(deleteMessages, bool);
     request_f!(sendSticker, Message, sticker);
@@ -330,22 +364,97 @@ pub trait TelegramApi {
     request!(setBusinessAccountName, bool);
     request!(setBusinessAccountUsername, bool);
     request!(setBusinessAccountBio, bool);
-    request!(setBusinessAccountProfilePhoto, bool);
+
+    fn set_business_account_profile_photo(
+        &self,
+        params: &crate::methods::SetBusinessAccountProfilePhotoParams,
+    ) -> Result<MethodResponse<bool>, Self::Error> {
+        let mut files = Vec::new();
+
+        let mut params = params.clone();
+        match &mut params.photo {
+            InputProfilePhoto::Static(photo_static) => {
+                if let Some(file) = photo_static.photo.replace_attach("photo_static") {
+                    files.push(("photo_static", file));
+                }
+            }
+            InputProfilePhoto::Animated(photo_animated) => {
+                if let Some(file) = photo_animated.animation.replace_attach("photo_animated") {
+                    files.push(("photo_animated", file));
+                }
+            }
+        }
+
+        self.request_with_possible_form_data("setBusinessAccountProfilePhoto", params, files)
+    }
+
     request!(removeBusinessAccountProfilePhoto, bool);
     request!(setBusinessAccountGiftSettings, bool);
     request!(getBusinessAccountStarBalance, StarAmount);
     request!(transferBusinessAccountStars, bool);
     request!(getBusinessAccountGifts, OwnedGifts);
+    request!(getUserGifts, OwnedGifts);
+    request!(getChatGifts, OwnedGifts);
     request!(convertGiftToStars, bool);
     request!(upgradeGift, bool);
     request!(transferGift, bool);
-    request!(postStory, Story);
-    request!(editStory, Story);
+
+    fn post_story(
+        &self,
+        params: &crate::methods::PostStoryParams,
+    ) -> Result<MethodResponse<Story>, Self::Error> {
+        let mut files = Vec::new();
+
+        let mut params = params.clone();
+
+        match &mut params.content {
+            InputStoryContent::Photo(photo_content) => {
+                if let Some(file) = photo_content.photo.replace_attach("photo_content") {
+                    files.push(("photo_content", file));
+                }
+            }
+            InputStoryContent::Video(video_content) => {
+                if let Some(file) = video_content.video.replace_attach("video_content") {
+                    files.push(("video_content", file));
+                }
+            }
+        }
+
+        self.request_with_possible_form_data("postStory", params, files)
+    }
+
+    request!(repostStory, Story);
+
+    fn edit_story(
+        &self,
+        params: &crate::methods::EditStoryParams,
+    ) -> Result<MethodResponse<Story>, Self::Error> {
+        let mut files = Vec::new();
+
+        let mut params = params.clone();
+
+        match &mut params.content {
+            InputStoryContent::Photo(photo_content) => {
+                if let Some(file) = photo_content.photo.replace_attach("photo_content") {
+                    files.push(("photo_content", file));
+                }
+            }
+            InputStoryContent::Video(video_content) => {
+                if let Some(file) = video_content.video.replace_attach("video_content") {
+                    files.push(("video_content", file));
+                }
+            }
+        }
+
+        self.request_with_possible_form_data("editStory", params, files)
+    }
+
     request!(deleteStory, bool);
     request!(sendInvoice, Message);
     request!(createInvoiceLink, String);
     request!(answerShippingQuery, bool);
     request!(answerPreCheckoutQuery, bool);
+    request_nb!(getMyStarBalance, u32);
     request!(getStarTransactions, StarTransactions);
     request!(refundStarPayment, bool);
     request!(editUserStarSubscription, bool);

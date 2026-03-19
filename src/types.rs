@@ -3,11 +3,11 @@
 use serde::{Deserialize, Serialize};
 
 use crate::games::{CallbackGame, Game};
-use crate::gifts::{AcceptedGiftTypes, GiftInfo, UniqueGiftInfo};
+use crate::gifts::{AcceptedGiftTypes, GiftInfo, UniqueGiftColors, UniqueGiftInfo};
 use crate::macros::{apistruct, apply};
 use crate::parse_mode::ParseMode;
 use crate::passport::PassportData;
-use crate::payments::{Invoice, RefundedPayment, SuccessfulPayment};
+use crate::payments::{Invoice, RefundedPayment, StarAmount, SuccessfulPayment};
 use crate::stickers::Sticker;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -54,6 +54,14 @@ pub enum ChatAction {
     UploadVideoNote,
 }
 
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum ButtonStyle {
+    Danger,
+    Success,
+    Primary,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum BotCommandScope {
@@ -95,6 +103,7 @@ pub struct ReplyParameters {
     pub quote_parse_mode: Option<ParseMode>,
     pub quote_entities: Option<Vec<MessageEntity>>,
     pub quote_position: Option<u32>,
+    pub checklist_task_id: Option<i64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -163,7 +172,7 @@ pub enum MenuButton {
 pub enum ChatBackground {
     Fill(BackgroundTypeFill),
     Wallpaper(BackgroundTypeWallpaper),
-    Patter(BackgroundTypePattern),
+    Pattern(BackgroundTypePattern),
     ChatTheme(BackgroundTypeChatTheme),
 }
 
@@ -210,12 +219,15 @@ pub struct ChatMemberAdministrator {
     pub can_edit_stories: Option<bool>,
     pub can_delete_stories: Option<bool>,
     pub can_manage_topics: Option<bool>,
+    pub can_manage_direct_messages: Option<bool>,
+    pub can_manage_tags: Option<bool>,
     pub custom_title: Option<String>,
 }
 
 #[apply(apistruct!)]
 #[derive(Eq)]
 pub struct ChatMemberMember {
+    pub tag: Option<String>,
     pub user: User,
     pub until_date: Option<u64>,
 }
@@ -223,6 +235,7 @@ pub struct ChatMemberMember {
 #[apply(apistruct!)]
 #[derive(Eq)]
 pub struct ChatMemberRestricted {
+    pub tag: Option<String>,
     pub user: User,
     pub is_member: bool,
     pub can_send_messages: bool,
@@ -235,6 +248,7 @@ pub struct ChatMemberRestricted {
     pub can_send_polls: bool,
     pub can_send_other_messages: bool,
     pub can_add_web_page_previews: bool,
+    pub can_edit_tag: bool,
     pub can_change_info: bool,
     pub can_invite_users: bool,
     pub can_pin_messages: bool,
@@ -331,6 +345,8 @@ pub struct User {
     pub supports_inline_queries: Option<bool>,
     pub can_connect_to_business: Option<bool>,
     pub has_main_web_app: Option<bool>,
+    pub has_topics_enabled: Option<bool>,
+    pub allows_users_to_create_topics: Option<bool>,
 }
 
 #[apply(apistruct!)]
@@ -344,6 +360,7 @@ pub struct Chat {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
     pub is_forum: Option<bool>,
+    pub is_direct_messages: Option<bool>,
 }
 
 #[apply(apistruct!)]
@@ -356,6 +373,7 @@ pub struct ChatFullInfo {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
     pub is_forum: Option<bool>,
+    pub is_direct_messages: Option<bool>,
     pub photo: Option<ChatPhoto>,
     pub active_usernames: Option<Vec<String>>,
     pub birthdate: Option<Birthdate>,
@@ -363,6 +381,7 @@ pub struct ChatFullInfo {
     pub business_location: Option<BusinessLocation>,
     pub business_opening_hours: Option<BusinessOpeningHours>,
     pub personal_chat: Option<Box<Chat>>,
+    pub parent_chat: Option<Box<Chat>>,
     pub available_reactions: Option<Vec<ReactionType>>,
     pub accent_color_id: Option<u16>,
     pub max_reaction_count: Option<u16>,
@@ -394,35 +413,44 @@ pub struct ChatFullInfo {
     pub custom_emoji_sticker_set_name: Option<String>,
     pub linked_chat_id: Option<i64>,
     pub location: Option<ChatLocation>,
+    pub rating: Option<UserRating>,
+    pub first_profile_audio: Option<Audio>,
+    pub unique_gift_colors: Option<UniqueGiftColors>,
+    pub paid_message_star_count: Option<u32>,
 }
 
 #[apply(apistruct!)]
 pub struct Message {
     pub message_id: i32,
     pub message_thread_id: Option<i32>,
+    pub direct_messages_topic: Option<Box<DirectMessagesTopic>>,
     pub from: Option<Box<User>>,
     pub sender_chat: Option<Box<Chat>>,
     pub sender_boost_count: Option<u32>,
     pub sender_business_bot: Option<Box<User>>,
+    pub sender_tag: Option<String>,
     pub date: u64,
     pub business_connection_id: Option<String>,
     pub chat: Box<Chat>,
     pub forward_origin: Option<Box<MessageOrigin>>,
     pub is_topic_message: Option<bool>,
     pub is_automatic_forward: Option<bool>,
-    pub reply_to_message: Option<Box<Message>>,
+    pub reply_to_message: Option<Box<Self>>,
     pub external_reply: Option<Box<ExternalReplyInfo>>,
     pub quote: Option<Box<TextQuote>>,
     pub reply_to_story: Option<Box<Story>>,
+    pub reply_to_checklist_task_id: Option<i64>,
     pub via_bot: Option<Box<User>>,
     pub edit_date: Option<u64>,
     pub has_protected_content: Option<bool>,
     pub is_from_offline: Option<bool>,
+    pub is_paid_post: Option<bool>,
     pub media_group_id: Option<String>,
     pub author_signature: Option<String>,
     pub text: Option<String>,
     pub entities: Option<Vec<MessageEntity>>,
     pub link_preview_options: Option<LinkPreviewOptions>,
+    pub suggested_post_info: Option<SuggestedPostInfo>,
     pub effect_id: Option<String>,
     pub animation: Option<Box<Animation>>,
     pub audio: Option<Box<Audio>>,
@@ -438,6 +466,7 @@ pub struct Message {
     pub caption_entities: Option<Vec<MessageEntity>>,
     pub show_caption_above_media: Option<bool>,
     pub has_media_spoiler: Option<bool>,
+    pub checklist: Option<Checklist>,
     pub contact: Option<Box<Contact>>,
     pub dice: Option<Box<Dice>>,
     pub game: Option<Box<Game>>,
@@ -446,6 +475,8 @@ pub struct Message {
     pub location: Option<Box<Location>>,
     pub new_chat_members: Option<Vec<User>>,
     pub left_chat_member: Option<Box<User>>,
+    pub chat_owner_left: Option<Box<ChatOwnerLeft>>,
+    pub chat_owner_changed: Option<Box<ChatOwnerChanged>>,
     pub new_chat_title: Option<String>,
     pub new_chat_photo: Option<Vec<PhotoSize>>,
     pub delete_chat_photo: Option<bool>,
@@ -463,12 +494,16 @@ pub struct Message {
     pub chat_shared: Option<Box<ChatShared>>,
     pub gift: Option<GiftInfo>,
     pub unique_gift: Option<UniqueGiftInfo>,
+    pub gift_upgrade_sent: Option<GiftInfo>,
     pub connected_website: Option<String>,
     pub write_access_allowed: Option<WriteAccessAllowed>,
     pub passport_data: Option<Box<PassportData>>,
     pub proximity_alert_triggered: Option<Box<ProximityAlertTriggered>>,
     pub boost_added: Option<Box<ChatBoostAdded>>,
     pub chat_background_set: Option<Box<ChatBackground>>,
+    pub checklist_tasks_done: Option<Box<ChecklistTasksDone>>,
+    pub checklist_tasks_added: Option<Box<ChecklistTasksAdded>>,
+    pub direct_message_price_changed: Option<Box<DirectMessagePriceChanged>>,
     pub forum_topic_created: Option<Box<ForumTopicCreated>>,
     pub forum_topic_edited: Option<Box<ForumTopicEdited>>,
     pub forum_topic_closed: Option<Box<ForumTopicClosed>>,
@@ -480,6 +515,11 @@ pub struct Message {
     pub giveaway_winners: Option<GiveawayWinners>,
     pub giveaway_completed: Option<GiveawayCompleted>,
     pub paid_message_price_changed: Option<PaidMessagePriceChanged>,
+    pub suggested_post_approved: Option<Box<SuggestedPostApproved>>,
+    pub suggested_post_approval_failed: Option<Box<SuggestedPostApprovalFailed>>,
+    pub suggested_post_declined: Option<Box<SuggestedPostDeclined>>,
+    pub suggested_post_paid: Option<Box<SuggestedPostPaid>>,
+    pub suggested_post_refunded: Option<Box<SuggestedPostRefunded>>,
     pub video_chat_scheduled: Option<Box<VideoChatScheduled>>,
     pub video_chat_started: Option<Box<VideoChatStarted>>,
     pub video_chat_ended: Option<Box<VideoChatEnded>>,
@@ -505,6 +545,8 @@ pub struct MessageEntity {
     pub user: Option<User>,
     pub language: Option<String>,
     pub custom_emoji_id: Option<String>,
+    pub unix_time: Option<u64>,
+    pub date_time_format: Option<String>,
 }
 
 #[apply(apistruct!)]
@@ -519,7 +561,7 @@ pub struct TextQuote {
 #[apply(apistruct!)]
 pub struct ExternalReplyInfo {
     pub origin: MessageOrigin,
-    pub chat: Option<Chat>,
+    pub chat: Option<Box<Chat>>,
     pub message_id: Option<i32>,
     pub link_preview_options: Option<LinkPreviewOptions>,
     pub animation: Option<Animation>,
@@ -533,6 +575,7 @@ pub struct ExternalReplyInfo {
     pub video_note: Option<VideoNote>,
     pub voice: Option<Voice>,
     pub has_media_spoiler: Option<bool>,
+    pub checklist: Option<Checklist>,
     pub contact: Option<Contact>,
     pub dice: Option<Dice>,
     pub game: Option<Game>,
@@ -606,6 +649,36 @@ impl LinkPreviewOptions {
 
 #[apply(apistruct!)]
 #[derive(Eq)]
+pub struct SuggestedPostPrice {
+    pub currency: String,
+    pub amount: u64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum SuggestedPostState {
+    Pending,
+    Approved,
+    Declined,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct SuggestedPostInfo {
+    pub state: SuggestedPostState,
+    pub price: Option<SuggestedPostPrice>,
+    pub send_date: Option<u64>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct SuggestedPostParameters {
+    pub price: Option<SuggestedPostPrice>,
+    pub send_date: Option<u64>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
 pub struct PhotoSize {
     pub file_id: String,
     pub file_unique_id: String,
@@ -655,6 +728,17 @@ pub struct Document {
 
 #[apply(apistruct!)]
 #[derive(Eq)]
+pub struct VideoQuality {
+    pub file_id: String,
+    pub file_unique_id: String,
+    pub width: u32,
+    pub height: u32,
+    pub codec: String,
+    pub file_size: Option<u64>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
 pub struct Video {
     pub file_id: String,
     pub file_unique_id: String,
@@ -664,6 +748,7 @@ pub struct Video {
     pub thumbnail: Option<PhotoSize>,
     pub cover: Option<Vec<PhotoSize>>,
     pub start_timestamp: Option<u64>,
+    pub qualities: Option<Vec<VideoQuality>>,
     pub file_name: Option<String>,
     pub mime_type: Option<String>,
     pub file_size: Option<u64>,
@@ -753,6 +838,60 @@ pub struct Poll {
 }
 
 #[apply(apistruct!)]
+#[derive(Eq)]
+pub struct ChecklistTask {
+    pub id: i64,
+    pub text: String,
+    pub text_entities: Option<Vec<MessageEntity>>,
+    pub completed_by_user: Option<User>,
+    pub completed_by_chat: Option<Box<Chat>>,
+    pub completion_date: Option<u32>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct Checklist {
+    pub title: String,
+    pub title_entities: Option<Vec<MessageEntity>>,
+    pub tasks: Vec<ChecklistTask>,
+    pub others_can_add_tasks: Option<bool>,
+    pub others_can_mark_tasks_as_done: Option<bool>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct InputChecklistTask {
+    pub id: i64,
+    pub text: String,
+    pub parse_mode: Option<String>,
+    pub text_entities: Option<Vec<MessageEntity>>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct InputChecklist {
+    pub title: String,
+    pub parse_mode: Option<String>,
+    pub title_entities: Option<Vec<MessageEntity>>,
+    pub tasks: Vec<InputChecklistTask>,
+    pub others_can_add_tasks: Option<bool>,
+    pub others_can_mark_tasks_as_done: Option<bool>,
+}
+
+#[apply(apistruct!)]
+pub struct ChecklistTasksDone {
+    pub checklist_message: Option<Message>,
+    pub marked_as_done_task_ids: Option<Vec<i64>>,
+    pub marked_as_not_done_task_ids: Option<Vec<i64>>,
+}
+
+#[apply(apistruct!)]
+pub struct ChecklistTasksAdded {
+    pub checklist_message: Option<Message>,
+    pub tasks: Vec<ChecklistTask>,
+}
+
+#[apply(apistruct!)]
 #[derive(Copy)]
 pub struct Location {
     pub longitude: f64,
@@ -786,6 +925,18 @@ pub struct ProximityAlertTriggered {
 #[derive(Copy, Eq)]
 pub struct MessageAutoDeleteTimerChanged {
     pub message_auto_delete_time: u32,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct ChatOwnerLeft {
+    pub new_owner: Option<User>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct ChatOwnerChanged {
+    pub new_owner: User,
 }
 
 #[apply(apistruct!)]
@@ -852,6 +1003,7 @@ pub struct ForumTopicCreated {
     pub name: String,
     pub icon_color: u32,
     pub icon_custom_emoji_id: Option<String>,
+    pub is_name_implicit: Option<bool>,
 }
 
 #[apply(apistruct!)]
@@ -926,9 +1078,23 @@ pub struct VideoChatParticipantsInvited {
 
 #[apply(apistruct!)]
 #[derive(Eq)]
+pub struct DirectMessagesTopic {
+    pub topic_id: i64,
+    pub user: Option<User>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
 pub struct UserProfilePhotos {
     pub total_count: u32,
     pub photos: Vec<Vec<PhotoSize>>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct UserProfileAudios {
+    pub total_count: u32,
+    pub audios: Vec<Audio>,
 }
 
 #[apply(apistruct!)]
@@ -955,12 +1121,14 @@ pub struct ReplyKeyboardMarkup {
 #[derive(Eq)]
 pub struct KeyboardButton {
     pub text: String,
+    pub icon_custom_emoji_id: Option<String>,
     pub request_users: Option<KeyboardButtonRequestUsers>,
     pub request_chat: Option<KeyboardButtonRequestChat>,
     pub request_contact: Option<bool>,
     pub request_location: Option<bool>,
     pub request_poll: Option<KeyboardButtonPollType>,
     pub web_app: Option<WebAppInfo>,
+    pub style: Option<ButtonStyle>,
 }
 
 #[apply(apistruct!)]
@@ -1015,6 +1183,7 @@ pub struct InlineKeyboardMarkup {
 #[derive(Eq)]
 pub struct InlineKeyboardButton {
     pub text: String,
+    pub icon_custom_emoji_id: Option<String>,
     pub url: Option<String>,
     pub login_url: Option<LoginUrl>,
     pub callback_data: Option<String>,
@@ -1025,6 +1194,7 @@ pub struct InlineKeyboardButton {
     pub copy_text: Option<CopyTextButton>,
     pub callback_game: Option<CallbackGame>,
     pub pay: Option<bool>,
+    pub style: Option<ButtonStyle>,
 }
 
 #[apply(apistruct!)]
@@ -1131,6 +1301,7 @@ pub struct ChatPermissions {
     pub can_send_polls: Option<bool>,
     pub can_send_other_messages: Option<bool>,
     pub can_add_web_page_previews: Option<bool>,
+    pub can_edit_tag: Option<bool>,
     pub can_change_info: Option<bool>,
     pub can_invite_users: Option<bool>,
     pub can_pin_messages: Option<bool>,
@@ -1170,6 +1341,15 @@ pub struct BusinessOpeningHoursInterval {
 pub struct BusinessOpeningHours {
     pub time_zone_name: String,
     pub opening_hours: Vec<BusinessOpeningHoursInterval>,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct UserRating {
+    pub level: i32,
+    pub rating: i32,
+    pub current_level_rating: i32,
+    pub next_level_rating: Option<i32>,
 }
 
 #[apply(apistruct!)]
@@ -1308,6 +1488,7 @@ pub struct ForumTopic {
     pub name: String,
     pub icon_color: u32,
     pub icon_custom_emoji_id: Option<String>,
+    pub is_name_implicit: Option<bool>,
 }
 
 #[apply(apistruct!)]
@@ -1363,6 +1544,53 @@ pub struct PaidMediaVideo {
 #[derive(Eq)]
 pub struct PaidMessagePriceChanged {
     pub paid_message_star_count: u32,
+}
+
+#[apply(apistruct!)]
+#[derive(Eq)]
+pub struct DirectMessagePriceChanged {
+    pub are_direct_messages_enabled: bool,
+    pub direct_message_star_count: Option<u32>,
+}
+
+#[apply(apistruct!)]
+pub struct SuggestedPostApproved {
+    pub suggested_post_message: Option<Message>,
+    pub price: Option<SuggestedPostPrice>,
+    pub send_date: u64,
+}
+
+#[apply(apistruct!)]
+pub struct SuggestedPostApprovalFailed {
+    pub suggested_post_message: Option<Message>,
+    pub price: SuggestedPostPrice,
+}
+
+#[apply(apistruct!)]
+pub struct SuggestedPostDeclined {
+    pub suggested_post_message: Option<Message>,
+    pub comment: Option<String>,
+}
+
+#[apply(apistruct!)]
+pub struct SuggestedPostPaid {
+    pub suggested_post_message: Option<Message>,
+    pub currency: String,
+    pub amount: Option<u64>,
+    pub star_amount: Option<StarAmount>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum RefundReason {
+    PostDeleted,
+    PaymentRefunded,
+}
+
+#[apply(apistruct!)]
+pub struct SuggestedPostRefunded {
+    pub suggested_post_message: Option<Message>,
+    pub reason: RefundReason,
 }
 
 #[apply(apistruct!)]
@@ -1428,6 +1656,8 @@ pub struct ChatAdministratorRights {
     pub can_edit_stories: Option<bool>,
     pub can_delete_stories: Option<bool>,
     pub can_manage_topics: Option<bool>,
+    pub can_manage_direct_messages: Option<bool>,
+    pub can_manage_tags: Option<bool>,
 }
 
 #[apply(apistruct!)]

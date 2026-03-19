@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.48.0 (2026-03-05)
+
+* feat: Bot API 9.5 - [#317](https://github.com/ayrat555/frankenstein/pull/317)
+
+## 0.47.0 (2026-02-12)
+
+* feat: Bot API 9.4 - [#314](https://github.com/ayrat555/frankenstein/pull/314)
+
+## 0.46.1 (2026-01-20)
+
+* docs(docsrs): doc_auto_cfg feature was merged into doc_cfg - [#312](https://github.com/ayrat555/frankenstein/pull/312)
+
+## 0.46.0 (2026-01-17)
+
+* refactor(clippy): use_self  - [#302](https://github.com/ayrat555/frankenstein/pull/302)
+* build: update reqwest to v0.13 - [#303](https://github.com/ayrat555/frankenstein/pull/303)
+* fix: fix ChatBackground's Pattern type - [#304](https://github.com/ayrat555/frankenstein/pull/304)
+* feat: Bot API 9.3 - [#305](https://github.com/ayrat555/frankenstein/pull/305)
+
+## 0.45.0 (2025-09-25)
+
+* perf(client): less clones on creating multipart form - [#297](https://github.com/ayrat555/frankenstein/pull/297)
+* feat: Bot API 9.2 - Checklists/Gifts/Direct Messages in Channels - [#298](https://github.com/ayrat555/frankenstein/pull/298)
+* feat: Bot API 9.2 - Suggested Posts - [#299](https://github.com/ayrat555/frankenstein/pull/299)
+
+## 0.44.0 (2025-07-13)
+
+* feat: Bot API 9.1 - [#293](https://github.com/ayrat555/frankenstein/pull/293)
+* fix!: fix fix post_story and edit_story - [#294](https://github.com/ayrat555/frankenstein/pull/294)
+* fix!: fix set_business_account_profile_photo [#283](https://github.com/ayrat555/frankenstein/pull/283)
+* chore: add send_invoice example [#292](https://github.com/ayrat555/frankenstein/pull/292)
+
 ## 0.43.0 (2025-07-07)
 
 * fix!: make `origin` of ExternalReplyInfo not optional - [#289](https://github.com/ayrat555/frankenstein/pull/289)
